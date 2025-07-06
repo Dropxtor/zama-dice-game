@@ -461,10 +461,30 @@ function App() {
                 ) : (
                   <>
                     <span>🎲</span>
-                    <span>Roll Dice</span>
+                    <span>
+                      Roll Dice {isZamaReady && isConnected ? '🔐' : ''}
+                    </span>
                   </>
                 )}
               </button>
+              
+              {isZamaReady && isConnected && (
+                <div className="text-center mt-4">
+                  <div className="text-sm text-green-400 flex items-center justify-center space-x-2">
+                    <span>🔐</span>
+                    <span>FHE Protected Mode Active</span>
+                  </div>
+                </div>
+              )}
+              
+              {!isZamaReady && (
+                <div className="text-center mt-4">
+                  <div className="text-sm text-yellow-400 flex items-center justify-center space-x-2">
+                    <span>⚠️</span>
+                    <span>Loading FHE capabilities...</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
