@@ -197,6 +197,13 @@ async def get_game(game_id: str):
 async def create_user(wallet_address: str, username: str):
     """Create or update user profile"""
     try:
+        # Validate input
+        if not wallet_address.startswith("0x") or len(wallet_address) != 42:
+            raise HTTPException(status_code=400, detail="Invalid wallet address format")
+        
+        if not username or len(username) < 3 or len(username) > 20:
+            raise HTTPException(status_code=400, detail="Username must be between 3 and 20 characters")
+        
         user = User(
             id=str(uuid.uuid4()),
             wallet_address=wallet_address,
@@ -220,8 +227,10 @@ async def create_user(wallet_address: str, username: str):
             await users_collection.insert_one(user.dict())
             return {"success": True, "message": "User created", "user": user.dict()}
             
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @app.get("/api/user/{wallet_address}")
 async def get_user(wallet_address: str):
