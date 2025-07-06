@@ -281,6 +281,18 @@ class ZamaDiceAPITester:
             print(f"Retrieved {len(response['leaderboard'])} leaderboard entries")
         
         return success
+        
+    def _concurrent_play_request(self):
+        """Helper method for concurrent testing"""
+        try:
+            response = requests.post(
+                f"{self.base_url}/api/play",
+                json={"num_dice": 2},
+                headers={'Content-Type': 'application/json'}
+            )
+            return response.status_code == 200
+        except Exception:
+            return False
 
     def run_all_tests(self):
         """Run all API tests"""
