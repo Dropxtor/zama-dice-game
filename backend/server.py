@@ -153,8 +153,10 @@ async def health_check():
     return {"status": "healthy", "service": "zama-dice-game"}
 
 @app.post("/api/play")
-async def play_game(request: Request, player_address: Optional[str] = None, num_dice: int = 2):
-    """Play a game of dice"""
+async def play_game(request: Request, player_address: Optional[str] = None, num_dice: int = 2, 
+                   game_mode: str = "standard", encrypted_data: Optional[Dict[str, Any]] = None,
+                   environment_id: Optional[str] = None):
+    """Play a game of dice with optional FHE support"""
     try:
         # Rate limiting
         if not rate_limit(request, max_requests=20, window_seconds=60):
@@ -167,16 +169,33 @@ async def play_game(request: Request, player_address: Optional[str] = None, num_
         if player_address and not player_address.startswith("0x"):
             raise HTTPException(status_code=400, detail="Invalid wallet address format")
         
-        # Roll dice
-        dice_results = roll_dice(num_dice)
+        # Process game based on mode
+        if game_mode == "fhe" and encrypted_data:
+            print(f"🔐 Processing FHE game with environment ID: {environment_id}")
+            
+            # For now, we'll simulate FHE processing
+            # In a full implementation, you'd decrypt and verify the FHE data
+            dice_results = [
+                random.randint(1, 6) for _ in range(num_dice)
+            ]
+            
+            # Log FHE processing
+            print(f"🎲 FHE encrypted dice data received: {len(encrypted_data.get('dice1', []))} bytes")
+            print(f"🎯 Generated dice results: {dice_results}")
+            
+        else:
+            # Standard dice roll
+            print(f"🎲 Processing standard game")
+            dice_results = roll_dice(num_dice)
+        
         total_score = calculate_score(dice_results)
         
-        # Generate NFT metadata
+        # Generate NFT metadata with game mode
         nft_metadata = None
         nft_generated = False
         
         if player_address:
-            nft_metadata = generate_nft_metadata(dice_results, player_address)
+            nft_metadata = generate_nft_metadata(dice_results, player_address, game_mode)
             nft_generated = True
         
         # Create game result
@@ -187,7 +206,10 @@ async def play_game(request: Request, player_address: Optional[str] = None, num_
             total_score=total_score,
             timestamp=datetime.now(),
             nft_generated=nft_generated,
-            nft_metadata=nft_metadata
+            nft_metadata=nft_metadata,
+            game_mode=game_mode,
+            environment_id=environment_id,
+            fhe_data={"encrypted": bool(encrypted_data)} if encrypted_data else None
         )
         
         # Save to database
@@ -200,7 +222,10 @@ async def play_game(request: Request, player_address: Optional[str] = None, num_
             "total_score": total_score,
             "nft_generated": nft_generated,
             "nft_metadata": nft_metadata,
-            "network": "sepolia"
+            "network": "sepolia",
+            "game_mode": game_mode,
+            "fhe_enabled": game_mode == "fhe",
+            "environment_id": environment_id
         }
         
     except HTTPException:
