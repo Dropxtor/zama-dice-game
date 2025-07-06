@@ -218,6 +218,9 @@ async def get_user(wallet_address: str):
         user = await users_collection.find_one({"wallet_address": wallet_address})
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
+        # Convert MongoDB document to JSON serializable format
+        if '_id' in user:
+            del user['_id']
         return user
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
