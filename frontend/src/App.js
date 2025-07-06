@@ -230,15 +230,33 @@ function App() {
           </p>
           <div className="flex justify-center space-x-8 mb-12">
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-400">{stats.total_games || 0}</div>
+              <div className="text-3xl font-bold text-purple-400">
+                {isLoadingStats ? (
+                  <div className="loading-spinner mx-auto"></div>
+                ) : (
+                  stats.total_games || 0
+                )}
+              </div>
               <div className="text-gray-400">Games Played</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-pink-400">{stats.total_nfts || 0}</div>
+              <div className="text-3xl font-bold text-pink-400">
+                {isLoadingStats ? (
+                  <div className="loading-spinner mx-auto"></div>
+                ) : (
+                  stats.total_nfts || 0
+                )}
+              </div>
               <div className="text-gray-400">NFTs Generated</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-400">{stats.total_users || 0}</div>
+              <div className="text-3xl font-bold text-blue-400">
+                {isLoadingStats ? (
+                  <div className="loading-spinner mx-auto"></div>
+                ) : (
+                  stats.total_users || 0
+                )}
+              </div>
               <div className="text-gray-400">Players</div>
             </div>
           </div>
