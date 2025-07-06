@@ -588,7 +588,10 @@ function App() {
             Built with ❤️ by <a href="https://x.com/0xDropxtor" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300">@0xDropxtor</a>
           </div>
           <div className="text-gray-400 text-sm">
-            Powered by Zama • Privacy-First Gaming • Sepolia Network
+            Powered by Zama FHE • Privacy-First Gaming • Sepolia Network • v1.0.0
+          </div>
+          <div className="text-gray-500 text-xs mt-2">
+            Environment: {environmentId} | Built on Emergent Platform
           </div>
         </div>
       </footer>
