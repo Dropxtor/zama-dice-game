@@ -295,8 +295,15 @@ function App() {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-300">
-              Network: <span className="text-green-400">Sepolia</span>
+            <div className="flex items-center space-x-4 text-sm">
+              <div className="text-gray-300">
+                Network: <span className="text-green-400">Sepolia</span>
+              </div>
+              <div className="text-gray-300">
+                FHE: <span className={isZamaReady ? "text-green-400" : "text-yellow-400"}>
+                  {isZamaReady ? "Ready" : "Loading..."}
+                </span>
+              </div>
             </div>
             {isConnected ? (
               <div className="bg-green-600/20 text-green-400 px-4 py-2 rounded-lg border border-green-500/30">
