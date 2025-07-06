@@ -144,7 +144,7 @@ function App() {
 
     try {
       // Determine game mode based on Zama availability
-      const gameMode = isZamaReady && zamaInstance ? 'fhe' : 'standard';
+      let gameMode = isZamaReady && zamaInstance ? 'fhe' : 'standard';
       
       console.log(`🎲 Playing game in ${gameMode} mode`);
       
