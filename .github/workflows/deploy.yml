@@ -1,0 +1,72 @@
+# Workflow pour GitHub Actions - Déploiement automatique
+
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'yarn'
+        cache-dependency-path: frontend/yarn.lock
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        yarn install
+    
+    - name: Install backend dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+    
+    - name: Run frontend tests
+      run: |
+        cd frontend
+        yarn test --coverage --watchAll=false
+    
+    - name: Build frontend
+      run: |
+        cd frontend
+        yarn build
+    
+    - name: Run backend tests
+      run: |
+        cd backend
+        python -m pytest
+      env:
+        MONGO_URL: mongodb://localhost:27017/test
+        ZAMA_ENVIRONMENT_ID: ead32e7f-5090-4060-9b60-97f68caa3cf8
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to Vercel
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.ORG_ID }}
+        vercel-project-id: ${{ secrets.PROJECT_ID }}
+        vercel-args: '--prod'
