@@ -142,17 +142,17 @@ class ZamaDiceAPITester:
 
     def test_create_user(self):
         """Test creating a user"""
-        data = {
+        username = f"TestUser_{datetime.now().strftime('%H%M%S')}"
+        params = {
             "wallet_address": self.wallet_address,
-            "username": f"TestUser_{datetime.now().strftime('%H%M%S')}"
+            "username": username
         }
             
         success, response = self.run_test(
             "Create User",
             "POST",
-            "/api/user",
-            200,
-            data=data
+            f"/api/user?wallet_address={self.wallet_address}&username={username}",
+            200
         )
         
         if success:
