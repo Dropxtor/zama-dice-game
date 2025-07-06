@@ -158,9 +158,9 @@ async def play_game(request: Request, player_address: Optional[str] = None, num_
                    environment_id: Optional[str] = None):
     """Play a game of dice with optional FHE support"""
     try:
-        # Rate limiting
-        if not rate_limit(request, max_requests=20, window_seconds=60):
-            raise HTTPException(status_code=429, detail="Rate limit exceeded. Please wait before making more requests.")
+        # Rate limiting - stricter for production
+        if not rate_limit(request, max_requests=10, window_seconds=60):
+            raise HTTPException(status_code=429, detail="Rate limit exceeded. Maximum 10 requests per minute.")
         
         # Validate input
         if num_dice < 1 or num_dice > 6:
