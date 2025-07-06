@@ -1,75 +1,257 @@
-from fastapi import FastAPI, APIRouter
-from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
-import logging
-from pathlib import Path
-from pydantic import BaseModel, Field
-from typing import List
+from typing import Optional, List
 import uuid
 from datetime import datetime
+import random
+import json
 
-
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
-
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
-
-# Create the main app without a prefix
 app = FastAPI()
 
-# Create a router with the /api prefix
-api_router = APIRouter(prefix="/api")
-
-
-# Define Models
-class StatusCheck(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
-
-class StatusCheckCreate(BaseModel):
-    client_name: str
-
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.dict()
-    status_obj = StatusCheck(**status_dict)
-    _ = await db.status_checks.insert_one(status_obj.dict())
-    return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    status_checks = await db.status_checks.find().to_list(1000)
-    return [StatusCheck(**status_check) for status_check in status_checks]
-
-# Include the router in the main app
-app.include_router(api_router)
-
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=True,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+# MongoDB connection
+MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/')
+client = AsyncIOMotorClient(MONGO_URL)
+db = client['zama_dice_game']
+games_collection = db['games']
+users_collection = db['users']
+nfts_collection = db['nfts']
 
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
+# Pydantic models
+class GameResult(BaseModel):
+    id: str
+    player_address: Optional[str] = None
+    dice_results: List[int]
+    total_score: int
+    timestamp: datetime
+    network: str = "sepolia"
+    nft_generated: bool = False
+    nft_metadata: Optional[dict] = None
+
+class User(BaseModel):
+    id: str
+    wallet_address: str
+    username: str
+    games_played: int = 0
+    total_score: int = 0
+    nfts_owned: int = 0
+
+class NFTMetadata(BaseModel):
+    id: str
+    token_id: Optional[str] = None
+    owner_address: str
+    dice_combination: List[int]
+    rarity: str
+    image_url: str
+    attributes: dict
+    created_at: datetime
+
+# Game logic
+def roll_dice(num_dice: int = 2) -> List[int]:
+    """Roll dice and return results"""
+    return [random.randint(1, 6) for _ in range(num_dice)]
+
+def calculate_score(dice_results: List[int]) -> int:
+    """Calculate game score based on dice results"""
+    total = sum(dice_results)
+    # Bonus for special combinations
+    if len(set(dice_results)) == 1:  # All same
+        total *= 2
+    elif sorted(dice_results) == list(range(min(dice_results), max(dice_results) + 1)):  # Sequence
+        total += 10
+    return total
+
+def determine_nft_rarity(dice_results: List[int]) -> str:
+    """Determine NFT rarity based on dice results"""
+    if len(set(dice_results)) == 1:  # All same
+        return "Legendary"
+    elif sum(dice_results) >= 10:
+        return "Rare"
+    elif sum(dice_results) >= 7:
+        return "Uncommon"
+    else:
+        return "Common"
+
+def generate_nft_metadata(dice_results: List[int], player_address: str) -> dict:
+    """Generate NFT metadata based on dice results"""
+    rarity = determine_nft_rarity(dice_results)
+    
+    # Generate unique attributes
+    attributes = {
+        "dice_combination": dice_results,
+        "total_score": sum(dice_results),
+        "rarity": rarity,
+        "special_combo": len(set(dice_results)) == 1,
+        "creator": "dropxtor",
+        "network": "sepolia"
+    }
+    
+    # Generate image URL based on combination
+    image_url = f"https://api.dicenft.game/images/{'-'.join(map(str, dice_results))}.png"
+    
+    return {
+        "name": f"Dice NFT #{'-'.join(map(str, dice_results))}",
+        "description": f"A unique NFT generated from dice roll: {dice_results}. Rarity: {rarity}",
+        "image": image_url,
+        "attributes": attributes,
+        "creator": "dropxtor",
+        "twitter": "@0xDropxtor"
+    }
+
+# API Routes
+@app.get("/api/health")
+async def health_check():
+    return {"status": "healthy", "service": "zama-dice-game"}
+
+@app.post("/api/play")
+async def play_game(player_address: Optional[str] = None, num_dice: int = 2):
+    """Play a game of dice"""
+    try:
+        # Roll dice
+        dice_results = roll_dice(num_dice)
+        total_score = calculate_score(dice_results)
+        
+        # Generate NFT metadata
+        nft_metadata = None
+        nft_generated = False
+        
+        if player_address:
+            nft_metadata = generate_nft_metadata(dice_results, player_address)
+            nft_generated = True
+        
+        # Create game result
+        game_result = GameResult(
+            id=str(uuid.uuid4()),
+            player_address=player_address,
+            dice_results=dice_results,
+            total_score=total_score,
+            timestamp=datetime.now(),
+            nft_generated=nft_generated,
+            nft_metadata=nft_metadata
+        )
+        
+        # Save to database
+        await games_collection.insert_one(game_result.dict())
+        
+        return {
+            "success": True,
+            "game_id": game_result.id,
+            "dice_results": dice_results,
+            "total_score": total_score,
+            "nft_generated": nft_generated,
+            "nft_metadata": nft_metadata,
+            "network": "sepolia"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/games")
+async def get_games(limit: int = 10):
+    """Get recent games"""
+    try:
+        games = await games_collection.find().sort("timestamp", -1).limit(limit).to_list(limit)
+        return {"games": games}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/game/{game_id}")
+async def get_game(game_id: str):
+    """Get specific game by ID"""
+    try:
+        game = await games_collection.find_one({"id": game_id})
+        if not game:
+            raise HTTPException(status_code=404, detail="Game not found")
+        return game
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/user")
+async def create_user(wallet_address: str, username: str):
+    """Create or update user profile"""
+    try:
+        user = User(
+            id=str(uuid.uuid4()),
+            wallet_address=wallet_address,
+            username=username
+        )
+        
+        # Check if user exists
+        existing_user = await users_collection.find_one({"wallet_address": wallet_address})
+        if existing_user:
+            # Update existing user
+            await users_collection.update_one(
+                {"wallet_address": wallet_address},
+                {"$set": {"username": username}}
+            )
+            return {"success": True, "message": "User updated", "user": existing_user}
+        else:
+            # Create new user
+            await users_collection.insert_one(user.dict())
+            return {"success": True, "message": "User created", "user": user.dict()}
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/user/{wallet_address}")
+async def get_user(wallet_address: str):
+    """Get user profile"""
+    try:
+        user = await users_collection.find_one({"wallet_address": wallet_address})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return user
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/leaderboard")
+async def get_leaderboard(limit: int = 10):
+    """Get top players leaderboard"""
+    try:
+        # Get top users by total score
+        pipeline = [
+            {"$group": {
+                "_id": "$player_address",
+                "total_score": {"$sum": "$total_score"},
+                "games_played": {"$sum": 1}
+            }},
+            {"$sort": {"total_score": -1}},
+            {"$limit": limit}
+        ]
+        
+        leaderboard = await games_collection.aggregate(pipeline).to_list(limit)
+        return {"leaderboard": leaderboard}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/stats")
+async def get_stats():
+    """Get game statistics"""
+    try:
+        total_games = await games_collection.count_documents({})
+        total_users = await users_collection.count_documents({})
+        total_nfts = await games_collection.count_documents({"nft_generated": True})
+        
+        return {
+            "total_games": total_games,
+            "total_users": total_users,
+            "total_nfts": total_nfts,
+            "network": "sepolia"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)

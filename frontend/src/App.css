@@ -1,38 +1,276 @@
-.App {
-    text-align: center;
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Custom animations */
+@keyframes dice-roll {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(90deg) scale(1.1); }
+  50% { transform: rotate(180deg) scale(1.2); }
+  75% { transform: rotate(270deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
 }
 
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(147, 51, 234, 0.5); }
+  50% { box-shadow: 0 0 30px rgba(147, 51, 234, 0.8); }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+@keyframes pulse-glow {
+  0%, 100% { 
+    text-shadow: 0 0 10px rgba(147, 51, 234, 0.5);
+    transform: scale(1);
+  }
+  50% { 
+    text-shadow: 0 0 20px rgba(147, 51, 234, 0.8);
+    transform: scale(1.05);
+  }
 }
 
-.App-link {
-    color: #61dafb;
+/* Dice rolling animation */
+.dice-rolling {
+  animation: dice-roll 0.5s ease-in-out infinite;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+.dice-result {
+  animation: float 2s ease-in-out infinite;
 }
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(147, 51, 234, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(147, 51, 234, 0.8);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glowing card effect */
+.card-glow {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(147, 51, 234, 0.2);
+  transition: all 0.3s ease;
+}
+
+.card-glow:hover {
+  border-color: rgba(147, 51, 234, 0.5);
+  box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Button effects */
+.btn-primary {
+  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  border: none;
+  border-radius: 9999px;
+  color: white;
+  font-weight: 600;
+  padding: 12px 24px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(147, 51, 234, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Particle effect background */
+.particle-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 0.1;
+}
+
+/* Animated background gradients */
+.bg-animated {
+  background: linear-gradient(-45deg, #1e1b4b, #312e81, #1e3a8a, #1e1b4b);
+  background-size: 400% 400%;
+  animation: gradient-shift 15s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Neon text effect */
+.neon-text {
+  text-shadow: 
+    0 0 5px rgba(147, 51, 234, 0.8),
+    0 0 10px rgba(147, 51, 234, 0.6),
+    0 0 15px rgba(147, 51, 234, 0.4),
+    0 0 20px rgba(147, 51, 234, 0.2);
+}
+
+/* Table styling */
+.game-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.game-table th,
+.game-table td {
+  border-bottom: 1px solid rgba(147, 51, 234, 0.1);
+  padding: 16px;
+}
+
+.game-table th {
+  background: rgba(147, 51, 234, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+}
+
+.game-table tr:hover {
+  background: rgba(147, 51, 234, 0.05);
+}
+
+/* Modal styling */
+.modal-overlay {
+  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.modal-content {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(147, 51, 234, 0.3);
+  border-radius: 16px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .dice-result,
+  .dice-rolling {
+    font-size: 4rem;
+  }
+  
+  .game-table {
+    font-size: 14px;
+  }
+  
+  .modal-content {
+    margin: 20px;
+  }
+}
+
+/* Loading animations */
+.loading-spinner {
+  border: 3px solid rgba(147, 51, 234, 0.3);
+  border-top: 3px solid rgba(147, 51, 234, 1);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Success animations */
+.success-animation {
+  animation: pulse-glow 1s ease-in-out infinite;
+}
+
+/* Error styling */
+.error-message {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  color: rgb(248, 113, 113);
+}
+
+/* Tooltip styling */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Custom utility classes */
+.text-glow {
+  text-shadow: 0 0 10px rgba(147, 51, 234, 0.5);
+}
+
+.border-glow {
+  border: 1px solid rgba(147, 51, 234, 0.3);
+  box-shadow: 0 0 10px rgba(147, 51, 234, 0.1);
+}
+
+.bg-glass {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+}
+
+/* Animation delays for staggered effects */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
