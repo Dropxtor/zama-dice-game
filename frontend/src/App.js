@@ -119,12 +119,19 @@ function App() {
   };
 
   const fetchStats = async () => {
+    setIsLoadingStats(true);
     try {
       const response = await fetch(`${backendUrl}/api/stats`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch stats');
+      }
       const data = await response.json();
       setStats(data);
     } catch (error) {
       console.error('Error fetching stats:', error);
+      setError('Failed to load statistics');
+    } finally {
+      setIsLoadingStats(false);
     }
   };
 
