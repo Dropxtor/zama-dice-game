@@ -318,14 +318,42 @@ function App() {
               )}
             </div>
 
+            {/* Error Message */}
+            {error && (
+              <div className="text-center mb-6">
+                <div className="error-message max-w-md mx-auto">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-red-400">⚠️</span>
+                    <span>{error}</span>
+                    <button
+                      onClick={() => setError('')}
+                      className="text-red-400 hover:text-red-300 ml-auto"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Play Button */}
             <div className="text-center">
               <button
                 onClick={playGame}
                 disabled={isRolling}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xl font-bold px-12 py-4 rounded-full transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100"
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xl font-bold px-12 py-4 rounded-full transition-all duration-300 transform hover:scale-105 disabled:hover:scale-100 flex items-center space-x-3 mx-auto"
               >
-                {isRolling ? '🎲 Rolling...' : '🎲 Roll Dice'}
+                {isRolling ? (
+                  <>
+                    <div className="loading-spinner"></div>
+                    <span>Rolling...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>🎲</span>
+                    <span>Roll Dice</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
