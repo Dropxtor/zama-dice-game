@@ -367,46 +367,57 @@ function App() {
             📈 Recent Games
           </h2>
           <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-6 border border-purple-500/20">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-purple-500/20">
-                    <th className="text-gray-300 font-semibold py-3">Player</th>
-                    <th className="text-gray-300 font-semibold py-3">Dice</th>
-                    <th className="text-gray-300 font-semibold py-3">Score</th>
-                    <th className="text-gray-300 font-semibold py-3">NFT</th>
-                    <th className="text-gray-300 font-semibold py-3">Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {gameHistory.map((game, index) => (
-                    <tr key={index} className="border-b border-purple-500/10">
-                      <td className="py-3 text-gray-300">
-                        {game.player_address ? formatAddress(game.player_address) : 'Anonymous'}
-                      </td>
-                      <td className="py-3">
-                        <div className="flex space-x-2">
-                          {game.dice_results.map((value, i) => (
-                            <span key={i} className="text-2xl">{getDiceIcon(value)}</span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="py-3 text-white font-semibold">{game.total_score}</td>
-                      <td className="py-3">
-                        {game.nft_generated ? (
-                          <span className="text-green-400">✅ Generated</span>
-                        ) : (
-                          <span className="text-gray-500">❌ None</span>
-                        )}
-                      </td>
-                      <td className="py-3 text-gray-400 text-sm">
-                        {new Date(game.timestamp).toLocaleTimeString()}
-                      </td>
+            {isLoadingHistory ? (
+              <div className="text-center py-8">
+                <div className="loading-spinner mx-auto mb-4"></div>
+                <div className="text-gray-400">Loading game history...</div>
+              </div>
+            ) : gameHistory.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                No games played yet. Start playing to see your history!
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left game-table">
+                  <thead>
+                    <tr className="border-b border-purple-500/20">
+                      <th className="text-gray-300 font-semibold py-3">Player</th>
+                      <th className="text-gray-300 font-semibold py-3">Dice</th>
+                      <th className="text-gray-300 font-semibold py-3">Score</th>
+                      <th className="text-gray-300 font-semibold py-3">NFT</th>
+                      <th className="text-gray-300 font-semibold py-3">Time</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {gameHistory.map((game, index) => (
+                      <tr key={index} className="border-b border-purple-500/10">
+                        <td className="py-3 text-gray-300">
+                          {game.player_address ? formatAddress(game.player_address) : 'Anonymous'}
+                        </td>
+                        <td className="py-3">
+                          <div className="flex space-x-2">
+                            {game.dice_results.map((value, i) => (
+                              <span key={i} className="text-2xl">{getDiceIcon(value)}</span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="py-3 text-white font-semibold">{game.total_score}</td>
+                        <td className="py-3">
+                          {game.nft_generated ? (
+                            <span className="text-green-400">✅ Generated</span>
+                          ) : (
+                            <span className="text-gray-500">❌ None</span>
+                          )}
+                        </td>
+                        <td className="py-3 text-gray-400 text-sm">
+                          {new Date(game.timestamp).toLocaleTimeString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       </section>
