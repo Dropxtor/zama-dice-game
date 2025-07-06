@@ -143,6 +143,43 @@ function App() {
     setError('');
 
     try {
+      // Determine game mode based on Zama availability
+      const gameMode = isZamaReady && zamaInstance ? 'fhe' : 'standard';
+      
+      console.log(`🎲 Playing game in ${gameMode} mode`);
+      
+      let encryptedData = null;
+      
+      if (gameMode === 'fhe' && isConnected) {
+        try {
+          // Generate encrypted dice roll using Zama FHE
+          console.log('🔐 Generating encrypted dice roll...');
+          
+          // Create two random dice values (1-6)
+          const dice1 = Math.floor(Math.random() * 6) + 1;
+          const dice2 = Math.floor(Math.random() * 6) + 1;
+          
+          console.log(`🎯 Local dice values: ${dice1}, ${dice2}`);
+          
+          // Encrypt the dice values using Zama FHE
+          const encryptedDice1 = await zamaInstance.encrypt32(dice1);
+          const encryptedDice2 = await zamaInstance.encrypt32(dice2);
+          
+          encryptedData = {
+            dice1: Array.from(encryptedDice1),
+            dice2: Array.from(encryptedDice2),
+            mode: 'fhe'
+          };
+          
+          console.log('✅ Dice values encrypted successfully');
+          
+        } catch (fheError) {
+          console.error('❌ FHE encryption failed:', fheError);
+          console.log('🔄 Falling back to standard mode');
+          gameMode = 'standard';
+        }
+      }
+
       const response = await fetch(`${backendUrl}/api/play`, {
         method: 'POST',
         headers: {
@@ -150,7 +187,10 @@ function App() {
         },
         body: JSON.stringify({
           player_address: isConnected ? walletAddress : null,
-          num_dice: 2
+          num_dice: 2,
+          game_mode: gameMode,
+          encrypted_data: encryptedData,
+          environment_id: environmentId
         }),
       });
 
