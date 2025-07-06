@@ -103,20 +103,20 @@ def calculate_score(dice_results: List[int]) -> int:
         total += 10
     return total
 
-def determine_nft_rarity(dice_results: List[int]) -> str:
-    """Determine NFT rarity based on dice results"""
+def determine_nft_rarity(dice_results: List[int], game_mode: str = "standard") -> str:
+    """Determine NFT rarity based on dice results and game mode"""
     if len(set(dice_results)) == 1:  # All same
-        return "Legendary"
+        return "Legendary" if game_mode == "fhe" else "Epic"
     elif sum(dice_results) >= 10:
-        return "Rare"
+        return "Rare" if game_mode == "fhe" else "Uncommon"
     elif sum(dice_results) >= 7:
-        return "Uncommon"
+        return "Uncommon" if game_mode == "fhe" else "Common"
     else:
         return "Common"
 
-def generate_nft_metadata(dice_results: List[int], player_address: str) -> dict:
-    """Generate NFT metadata based on dice results"""
-    rarity = determine_nft_rarity(dice_results)
+def generate_nft_metadata(dice_results: List[int], player_address: str, game_mode: str = "standard") -> dict:
+    """Generate NFT metadata based on dice results and game mode"""
+    rarity = determine_nft_rarity(dice_results, game_mode)
     
     # Generate unique attributes
     attributes = {
@@ -125,19 +125,26 @@ def generate_nft_metadata(dice_results: List[int], player_address: str) -> dict:
         "rarity": rarity,
         "special_combo": len(set(dice_results)) == 1,
         "creator": "dropxtor",
-        "network": "sepolia"
+        "network": "sepolia",
+        "game_mode": game_mode,
+        "fhe_enabled": game_mode == "fhe"
     }
     
-    # Generate image URL based on combination
-    image_url = f"https://api.dicenft.game/images/{'-'.join(map(str, dice_results))}.png"
+    # Generate image URL based on combination and mode
+    mode_prefix = "fhe" if game_mode == "fhe" else "std"
+    image_url = f"https://api.dicenft.game/images/{mode_prefix}-{'-'.join(map(str, dice_results))}.png"
+    
+    nft_name = f"{'🔐 FHE ' if game_mode == 'fhe' else ''}Dice NFT #{'-'.join(map(str, dice_results))}"
+    description = f"A {'privacy-preserving ' if game_mode == 'fhe' else ''}unique NFT generated from dice roll: {dice_results}. Rarity: {rarity}"
     
     return {
-        "name": f"Dice NFT #{'-'.join(map(str, dice_results))}",
-        "description": f"A unique NFT generated from dice roll: {dice_results}. Rarity: {rarity}",
+        "name": nft_name,
+        "description": description,
         "image": image_url,
         "attributes": attributes,
         "creator": "dropxtor",
-        "twitter": "@0xDropxtor"
+        "twitter": "@0xDropxtor",
+        "powered_by": "Zama FHE" if game_mode == "fhe" else "Standard RNG"
     }
 
 # API Routes
