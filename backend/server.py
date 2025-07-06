@@ -64,6 +64,9 @@ class GameResult(BaseModel):
     network: str = "sepolia"
     nft_generated: bool = False
     nft_metadata: Optional[dict] = None
+    game_mode: str = "standard"  # "standard" or "fhe"
+    environment_id: Optional[str] = None
+    fhe_data: Optional[dict] = None
 
 class User(BaseModel):
     id: str
