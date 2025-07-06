@@ -37,6 +37,9 @@ function App() {
   };
 
   const connectWallet = async () => {
+    setError('');
+    setLoading(true);
+    
     if (window.ethereum) {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -69,10 +72,13 @@ function App() {
         }
       } catch (error) {
         console.error('Error connecting wallet:', error);
+        setError('Failed to connect wallet. Please try again.');
       }
     } else {
-      alert('MetaMask not installed!');
+      setError('MetaMask not installed! Please install MetaMask extension.');
     }
+    
+    setLoading(false);
   };
 
   const playGame = async () => {
