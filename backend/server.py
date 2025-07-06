@@ -222,8 +222,10 @@ async def get_game(game_id: str):
         if '_id' in game:
             del game['_id']
         return game
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @app.post("/api/user")
 async def create_user(wallet_address: str, username: str):
