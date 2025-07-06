@@ -78,6 +78,7 @@ function App() {
   const playGame = async () => {
     setIsRolling(true);
     setGameResult(null);
+    setError('');
 
     try {
       const response = await fetch(`${backendUrl}/api/play`, {
@@ -91,6 +92,11 @@ function App() {
         }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to play game');
+      }
+
       const result = await response.json();
       
       // Simulate dice rolling animation
@@ -101,10 +107,12 @@ function App() {
         setShowNFTModal(true);
       }
       
+      // Update stats and history without blocking
       fetchStats();
       fetchGameHistory();
     } catch (error) {
       console.error('Error playing game:', error);
+      setError(error.message || 'Failed to play game. Please try again.');
     } finally {
       setIsRolling(false);
     }
