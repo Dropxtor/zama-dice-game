@@ -293,7 +293,9 @@ class ZamaDiceAPITester:
             self.test_stats,
             self.test_create_user,
             self.test_get_user,
-            self.test_leaderboard
+            self.test_leaderboard,
+            self.test_edge_cases,
+            self.test_performance
         ]
         
         for test in tests:
