@@ -1,15 +1,41 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 from typing import Optional, List
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 import random
 import json
+import time
 
 app = FastAPI()
+
+# Rate limiting dictionary
+rate_limit_store = {}
+
+def rate_limit(request: Request, max_requests: int = 30, window_seconds: int = 60):
+    """Simple rate limiting implementation"""
+    client_ip = request.client.host
+    current_time = time.time()
+    
+    # Clean old entries
+    rate_limit_store[client_ip] = [
+        timestamp for timestamp in rate_limit_store.get(client_ip, [])
+        if current_time - timestamp < window_seconds
+    ]
+    
+    # Check if limit exceeded
+    if len(rate_limit_store.get(client_ip, [])) >= max_requests:
+        return False
+    
+    # Add current request
+    if client_ip not in rate_limit_store:
+        rate_limit_store[client_ip] = []
+    rate_limit_store[client_ip].append(current_time)
+    
+    return True
 
 # CORS configuration
 app.add_middleware(
