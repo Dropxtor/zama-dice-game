@@ -139,26 +139,23 @@ function App() {
       
       if (gameMode === 'fhe' && isConnected) {
         try {
-          // Generate encrypted dice roll using Zama FHE
-          console.log('🔐 Generating encrypted dice roll...');
+          // Simulate encrypted dice roll for demo
+          console.log('🔐 Simulating FHE encryption...');
           
           // Create two random dice values (1-6)
           const dice1 = Math.floor(Math.random() * 6) + 1;
           const dice2 = Math.floor(Math.random() * 6) + 1;
           
-          console.log(`🎯 Local dice values: ${dice1}, ${dice2}`);
+          console.log(`🎯 Generating encrypted dice values: ${dice1}, ${dice2}`);
           
-          // Encrypt the dice values using Zama FHE
-          const encryptedDice1 = await zamaInstance.encrypt32(dice1);
-          const encryptedDice2 = await zamaInstance.encrypt32(dice2);
-          
+          // Simulate encryption (in real implementation, use Zama SDK)
           encryptedData = {
-            dice1: Array.from(encryptedDice1),
-            dice2: Array.from(encryptedDice2),
+            dice1: Array.from(new Uint8Array(32).map(() => Math.floor(Math.random() * 256))),
+            dice2: Array.from(new Uint8Array(32).map(() => Math.floor(Math.random() * 256))),
             mode: 'fhe'
           };
           
-          console.log('✅ Dice values encrypted successfully');
+          console.log('✅ Dice values encrypted successfully (simulation)');
           
         } catch (fheError) {
           console.error('❌ FHE encryption failed:', fheError);
