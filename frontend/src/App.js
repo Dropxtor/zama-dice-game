@@ -409,12 +409,19 @@ function App() {
                   <div className="text-4xl font-bold text-white mb-2">
                     Score: {gameResult.total_score}
                   </div>
-                  <div className="text-gray-300">
+                  <div className="text-gray-300 mb-2">
                     Dice: {gameResult.dice_results.join(' + ')} = {gameResult.dice_results.reduce((a, b) => a + b, 0)}
                   </div>
+                  {gameResult.fhe_enabled && (
+                    <div className="flex items-center space-x-2 mb-2">
+                      <span className="text-green-400">🔐</span>
+                      <span className="text-green-400 font-semibold">FHE Protected</span>
+                      <span className="text-xs text-gray-400">- Powered by Zama</span>
+                    </div>
+                  )}
                   {gameResult.nft_generated && (
                     <div className="mt-4 text-green-400 font-semibold">
-                      🎉 NFT Generated!
+                      🎉 {gameResult.fhe_enabled ? 'Private ' : ''}NFT Generated!
                     </div>
                   )}
                 </div>
