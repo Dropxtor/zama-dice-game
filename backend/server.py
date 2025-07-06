@@ -162,6 +162,10 @@ async def get_games(limit: int = 10):
     """Get recent games"""
     try:
         games = await games_collection.find().sort("timestamp", -1).limit(limit).to_list(limit)
+        # Convert MongoDB documents to JSON serializable format
+        for game in games:
+            if '_id' in game:
+                del game['_id']
         return {"games": games}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
