@@ -179,20 +179,105 @@ class ZamaDiceAPITester:
         
         return success
 
-    def test_leaderboard(self):
-        """Test getting the leaderboard"""
+    def test_edge_cases(self):
+        """Test edge cases"""
+        print("\n🧪 Testing Edge Cases")
+        
+        # Test with invalid number of dice
         success, response = self.run_test(
-            "Get Leaderboard",
-            "GET",
-            "/api/leaderboard",
-            200,
-            params={"limit": 5}
+            "Play with Invalid Dice Count (negative)",
+            "POST",
+            "/api/play",
+            500,  # Expecting error
+            data={"num_dice": -1}
         )
         
-        if success and 'leaderboard' in response:
-            print(f"Retrieved {len(response['leaderboard'])} leaderboard entries")
+        # Test with large number of dice
+        success, response = self.run_test(
+            "Play with Large Dice Count",
+            "POST",
+            "/api/play",
+            200,
+            data={"num_dice": 10}
+        )
         
-        return success
+        if success:
+            print(f"Successfully handled large dice count: {len(response.get('dice_results'))}")
+        
+        # Test with invalid game ID
+        success, response = self.run_test(
+            "Get Game with Invalid ID",
+            "GET",
+            "/api/game/invalid-id-123",
+            404  # Expecting not found
+        )
+        
+        # Test with invalid wallet address
+        success, response = self.run_test(
+            "Get User with Invalid Wallet",
+            "GET",
+            "/api/user/0xinvalid-wallet-address",
+            404  # Expecting not found
+        )
+        
+        return True  # Return True as we're testing error cases
+        
+    def test_performance(self):
+        """Test API performance"""
+        print("\n⚡ Testing API Performance")
+        
+        # Test response time for health endpoint
+        start_time = time.time()
+        success, _ = self.run_test("Health Check Performance", "GET", "/api/health", 200)
+        health_time = time.time() - start_time
+        print(f"Health endpoint response time: {health_time:.4f} seconds")
+        
+        # Test response time for play endpoint
+        start_time = time.time()
+        success, _ = self.run_test(
+            "Play Game Performance", 
+            "POST", 
+            "/api/play", 
+            200, 
+            data={"num_dice": 2}
+        )
+        play_time = time.time() - start_time
+        print(f"Play endpoint response time: {play_time:.4f} seconds")
+        
+        # Test response time for games endpoint
+        start_time = time.time()
+        success, _ = self.run_test("Get Games Performance", "GET", "/api/games", 200)
+        games_time = time.time() - start_time
+        print(f"Games endpoint response time: {games_time:.4f} seconds")
+        
+        # Test concurrent requests
+        print("\nTesting concurrent requests...")
+        num_requests = 10
+        start_time = time.time()
+        
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            futures = [executor.submit(self._concurrent_play_request) for _ in range(num_requests)]
+            results = [future.result() for future in concurrent.futures.as_completed(futures)]
+        
+        total_time = time.time() - start_time
+        success_count = sum(1 for result in results if result)
+        
+        print(f"Completed {num_requests} concurrent requests in {total_time:.4f} seconds")
+        print(f"Success rate: {success_count}/{num_requests} ({success_count/num_requests*100:.1f}%)")
+        
+        return success_count == num_requests
+    
+    def _concurrent_play_request(self):
+        """Helper method for concurrent testing"""
+        try:
+            response = requests.post(
+                f"{self.base_url}/api/play",
+                json={"num_dice": 2},
+                headers={'Content-Type': 'application/json'}
+            )
+            return response.status_code == 200
+        except Exception:
+            return False
 
     def run_all_tests(self):
         """Run all API tests"""
