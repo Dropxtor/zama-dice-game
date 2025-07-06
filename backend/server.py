@@ -86,6 +86,8 @@ class NFTMetadata(BaseModel):
 # Game logic
 def roll_dice(num_dice: int = 2) -> List[int]:
     """Roll dice and return results"""
+    if num_dice < 1:
+        num_dice = 2  # Default to 2 dice if invalid
     return [random.randint(1, 6) for _ in range(num_dice)]
 
 def calculate_score(dice_results: List[int]) -> int:
