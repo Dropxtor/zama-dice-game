@@ -15,26 +15,26 @@ app = FastAPI()
 # Rate limiting dictionary
 rate_limit_store = {}
 
-def rate_limit(request: Request, max_requests: int = 30, window_seconds: int = 60):
-    """Simple rate limiting implementation"""
+def rate_limit(request: Request, max_requests: int = 10, window_seconds: int = 60):
+    """Improved rate limiting implementation"""
     client_ip = request.client.host
     current_time = time.time()
     
     # Clean old entries
-    rate_limit_store[client_ip] = [
-        timestamp for timestamp in rate_limit_store.get(client_ip, [])
-        if current_time - timestamp < window_seconds
-    ]
+    if client_ip in rate_limit_store:
+        rate_limit_store[client_ip] = [
+            timestamp for timestamp in rate_limit_store[client_ip]
+            if current_time - timestamp < window_seconds
+        ]
+    else:
+        rate_limit_store[client_ip] = []
     
     # Check if limit exceeded
-    if len(rate_limit_store.get(client_ip, [])) >= max_requests:
+    if len(rate_limit_store[client_ip]) >= max_requests:
         return False
     
     # Add current request
-    if client_ip not in rate_limit_store:
-        rate_limit_store[client_ip] = []
     rate_limit_store[client_ip].append(current_time)
-    
     return True
 
 # CORS configuration
