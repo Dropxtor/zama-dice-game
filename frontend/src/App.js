@@ -101,20 +101,15 @@ function App() {
         }
         
         // Initialize Zama instance after wallet connection if not already done
-        if (!zamaInstance) {
+        if (!zamaInstance && !zamaError) {
           try {
-            await initSDK();
-            const config = { 
-              ...SepoliaConfig, 
-              network: window.ethereum,
-              environmentId: environmentId
-            };
-            const instance = await createInstance(config);
-            setZamaInstance(instance);
+            console.log('✅ Wallet connected, simulating Zama FHE initialization...');
+            // In real implementation: initialize Zama SDK here
             setIsZamaReady(true);
-            console.log('✅ Zama instance created after wallet connection');
+            console.log('✅ Zama FHE simulation ready after wallet connection');
           } catch (zamaError) {
             console.error('❌ Error creating Zama instance:', zamaError);
+            setZamaError('Failed to initialize FHE');
           }
         }
         
