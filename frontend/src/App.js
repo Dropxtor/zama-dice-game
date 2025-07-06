@@ -9,6 +9,10 @@ function App() {
   const [gameHistory, setGameHistory] = useState([]);
   const [stats, setStats] = useState({});
   const [showNFTModal, setShowNFTModal] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
