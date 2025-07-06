@@ -118,6 +118,13 @@ async def health_check():
 async def play_game(player_address: Optional[str] = None, num_dice: int = 2):
     """Play a game of dice"""
     try:
+        # Validate input
+        if num_dice < 1 or num_dice > 6:
+            raise HTTPException(status_code=400, detail="Number of dice must be between 1 and 6")
+        
+        if player_address and not player_address.startswith("0x"):
+            raise HTTPException(status_code=400, detail="Invalid wallet address format")
+        
         # Roll dice
         dice_results = roll_dice(num_dice)
         total_score = calculate_score(dice_results)
@@ -154,8 +161,10 @@ async def play_game(player_address: Optional[str] = None, num_dice: int = 2):
             "network": "sepolia"
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @app.get("/api/games")
 async def get_games(limit: int = 10):
