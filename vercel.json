@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    },
+    {
+      "src": "backend/server.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "backend/server.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "frontend/build/$1"
+    }
+  ],
+  "env": {
+    "MONGO_URL": "@mongo_url",
+    "ZAMA_ENVIRONMENT_ID": "ead32e7f-5090-4060-9b60-97f68caa3cf8"
+  },
+  "functions": {
+    "backend/server.py": {
+      "maxDuration": 30
+    }
+  }
+}
