@@ -141,9 +141,13 @@ async def health_check():
     return {"status": "healthy", "service": "zama-dice-game"}
 
 @app.post("/api/play")
-async def play_game(player_address: Optional[str] = None, num_dice: int = 2):
+async def play_game(request: Request, player_address: Optional[str] = None, num_dice: int = 2):
     """Play a game of dice"""
     try:
+        # Rate limiting
+        if not rate_limit(request, max_requests=20, window_seconds=60):
+            raise HTTPException(status_code=429, detail="Rate limit exceeded. Please wait before making more requests.")
+        
         # Validate input
         if num_dice < 1 or num_dice > 6:
             raise HTTPException(status_code=400, detail="Number of dice must be between 1 and 6")
