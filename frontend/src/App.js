@@ -288,6 +288,9 @@ function App() {
                   {isZamaReady ? "Ready" : "Loading..."}
                 </span>
               </div>
+              <div className="text-gray-300 text-xs">
+                Env: <span className="text-blue-400">{environmentId.slice(0, 8)}...</span>
+              </div>
             </div>
             {isConnected ? (
               <div className="bg-green-600/20 text-green-400 px-4 py-2 rounded-lg border border-green-500/30">
