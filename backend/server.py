@@ -166,8 +166,20 @@ async def play_game(request: Request, player_address: Optional[str] = None, num_
         if num_dice < 1 or num_dice > 6:
             raise HTTPException(status_code=400, detail="Number of dice must be between 1 and 6")
         
-        if player_address and not player_address.startswith("0x"):
-            raise HTTPException(status_code=400, detail="Invalid wallet address format")
+        if player_address:
+            # Strict wallet address validation
+            if not player_address.startswith("0x") or len(player_address) != 42:
+                raise HTTPException(status_code=400, detail="Invalid wallet address format")
+            
+            # Additional validation - only hexadecimal characters
+            try:
+                int(player_address[2:], 16)
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid wallet address format")
+        
+        # Validate environment_id if provided
+        if environment_id and len(environment_id) > 100:
+            raise HTTPException(status_code=400, detail="Invalid environment ID")
         
         # Process game based on mode
         if game_mode == "fhe" and encrypted_data:
