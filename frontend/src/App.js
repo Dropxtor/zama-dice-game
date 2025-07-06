@@ -136,12 +136,19 @@ function App() {
   };
 
   const fetchGameHistory = async () => {
+    setIsLoadingHistory(true);
     try {
       const response = await fetch(`${backendUrl}/api/games?limit=5`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch game history');
+      }
       const data = await response.json();
       setGameHistory(data.games || []);
     } catch (error) {
       console.error('Error fetching game history:', error);
+      setError('Failed to load game history');
+    } finally {
+      setIsLoadingHistory(false);
     }
   };
 
