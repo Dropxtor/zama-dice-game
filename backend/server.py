@@ -277,8 +277,10 @@ async def get_user(wallet_address: str):
         if '_id' in user:
             del user['_id']
         return user
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @app.get("/api/leaderboard")
 async def get_leaderboard(limit: int = 10):
