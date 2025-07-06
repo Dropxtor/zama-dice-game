@@ -209,9 +209,17 @@ function App() {
             ) : (
               <button
                 onClick={connectWallet}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105"
+                disabled={loading}
+                className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 disabled:hover:scale-100 flex items-center space-x-2"
               >
-                Connect Wallet
+                {loading ? (
+                  <>
+                    <div className="loading-spinner"></div>
+                    <span>Connecting...</span>
+                  </>
+                ) : (
+                  <span>Connect Wallet</span>
+                )}
               </button>
             )}
           </div>
