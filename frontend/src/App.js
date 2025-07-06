@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { initSDK, createInstance, SepoliaConfig } from '@zama-fhe/relayer-sdk/bundle';
+import { ethers } from 'ethers';
 import './App.css';
 
 function App() {
@@ -13,14 +15,49 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [zamaInstance, setZamaInstance] = useState(null);
+  const [isZamaReady, setIsZamaReady] = useState(false);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+  const environmentId = 'ead32e7f-5090-4060-9b60-97f68caa3cf8';
 
   useEffect(() => {
     checkWalletConnection();
     fetchStats();
     fetchGameHistory();
+    initializeZama();
   }, []);
+
+  const initializeZama = async () => {
+    try {
+      console.log('🔄 Initializing Zama FHE SDK...');
+      
+      // Initialize the FHE SDK
+      await initSDK();
+      console.log('✅ FHE SDK loaded successfully');
+      
+      // Create Zama instance when MetaMask is available
+      if (window.ethereum) {
+        const config = { 
+          ...SepoliaConfig, 
+          network: window.ethereum,
+          environmentId: environmentId
+        };
+        
+        const instance = await createInstance(config);
+        setZamaInstance(instance);
+        setIsZamaReady(true);
+        console.log('✅ Zama instance created successfully');
+        console.log('🌐 Environment ID:', environmentId);
+      } else {
+        console.log('⚠️ MetaMask not available, Zama instance will be created after wallet connection');
+      }
+      
+    } catch (error) {
+      console.error('❌ Error initializing Zama:', error);
+      setError('Failed to initialize Zama FHE. Some features may be limited.');
+    }
+  };
 
   const checkWalletConnection = async () => {
     if (window.ethereum) {
