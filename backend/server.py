@@ -202,6 +202,9 @@ async def create_user(wallet_address: str, username: str):
                 {"wallet_address": wallet_address},
                 {"$set": {"username": username}}
             )
+            # Convert MongoDB document to JSON serializable format
+            if '_id' in existing_user:
+                del existing_user['_id']
             return {"success": True, "message": "User updated", "user": existing_user}
         else:
             # Create new user
