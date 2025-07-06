@@ -107,6 +107,25 @@ function App() {
             });
           }
         }
+        
+        // Initialize Zama instance after wallet connection if not already done
+        if (!zamaInstance) {
+          try {
+            await initSDK();
+            const config = { 
+              ...SepoliaConfig, 
+              network: window.ethereum,
+              environmentId: environmentId
+            };
+            const instance = await createInstance(config);
+            setZamaInstance(instance);
+            setIsZamaReady(true);
+            console.log('✅ Zama instance created after wallet connection');
+          } catch (zamaError) {
+            console.error('❌ Error creating Zama instance:', zamaError);
+          }
+        }
+        
       } catch (error) {
         console.error('Error connecting wallet:', error);
         setError('Failed to connect wallet. Please try again.');
